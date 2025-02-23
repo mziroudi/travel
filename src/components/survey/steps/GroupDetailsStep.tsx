@@ -12,7 +12,7 @@ interface GroupDetailsStepProps {
 const GROUP_COMPOSITION = [
   { id: TripTypeEnum.FAMILY, label: 'Family Trip', icon: '👨‍👩‍👧‍👦' },
   { id: TripTypeEnum.FRIENDS, label: 'Friends Getaway', icon: '👥' },
-  { id: TripTypeEnum.COUPLE, label: 'Romantic Trip', icon: '💑' },
+  { id: TripTypeEnum.COUPLE, label: 'Romantic Trip', icon: '👫' },
   { id: TripTypeEnum.SOLO, label: 'Solo Adventure', icon: '🚶' },
   { id: TripTypeEnum.BUSINESS, label: 'Business Trip', icon: '💼' },
   { id: TripTypeEnum.GROUP, label: 'Group Tour', icon: '🎯' },
