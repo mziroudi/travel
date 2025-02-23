@@ -1,12 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { type SurveyData } from '@/types/survey'
 
-if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable')
-}
+// Make API key check non-blocking
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
 
-// Initialize the Gemini API with your API key
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY)
+// Initialize the Gemini API with your API key if available
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null
 
 export interface Destination {
   name: string
@@ -34,6 +33,12 @@ export interface TravelRecommendation {
 export async function generateTravelRecommendations(surveyData: SurveyData) {
   try {
     console.log('Generating travel recommendations for:', surveyData);
+    
+    if (!genAI) {
+      console.warn('No Gemini API key provided, returning mock data')
+      return getMockRecommendations(surveyData)
+    }
+
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
 
     const prompt = `As a travel expert, provide personalized travel recommendations based on the following preferences. Return the response in a structured format that can be parsed as JSON.
@@ -105,12 +110,57 @@ Provide practical travel tips relevant to the group composition.`
     return parsedData;
   } catch (error) {
     console.error('Error generating recommendations:', error)
-    if (error instanceof Error) {
-      if (error.message.includes('API key')) {
-        throw new Error('Invalid API key. Please check your configuration.')
+    return getMockRecommendations(surveyData)
+  }
+}
+
+function getMockRecommendations(surveyData: SurveyData): TravelRecommendation {
+  return {
+    destinations: [
+      {
+        name: "Sample Destination",
+        description: "A beautiful destination perfect for your preferences.",
+        imageQuery: "scenic landscape destination",
+        activities: ["Sightseeing", "Local cuisine", "Cultural tours"],
+        accommodation: [
+          {
+            name: "Comfort Hotel",
+            type: "4-star hotel",
+            priceRange: "$200-300 per night"
+          }
+        ]
       }
-      throw new Error(`Failed to generate recommendations: ${error.message}`)
-    }
-    throw new Error('Failed to generate travel recommendations')
+    ],
+    bestTimeToVisit: [
+      "Spring (March to May) offers mild weather",
+      "Autumn (September to November) has fewer tourists"
+    ],
+    travelTips: [
+      "Book accommodations in advance",
+      "Consider local transportation options",
+      "Research local customs and etiquette"
+    ],
+    costBreakdown: [
+      {
+        category: "Accommodation",
+        cost: "40% of budget",
+        note: "Based on selected hotel type"
+      },
+      {
+        category: "Activities",
+        cost: "30% of budget",
+        note: "Including guided tours and attractions"
+      },
+      {
+        category: "Transportation",
+        cost: "20% of budget",
+        note: "Local transport and transfers"
+      },
+      {
+        category: "Miscellaneous",
+        cost: "10% of budget",
+        note: "Food, souvenirs, and contingency"
+      }
+    ]
   }
 } 

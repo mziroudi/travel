@@ -1,6 +1,5 @@
-if (!process.env.NEXT_PUBLIC_PIXABAY_API_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_PIXABAY_API_KEY environment variable')
-}
+// Make API key check non-blocking
+const PIXABAY_API_KEY = process.env.NEXT_PUBLIC_PIXABAY_API_KEY
 
 export interface PixabayImage {
   id: number
@@ -14,6 +13,12 @@ export interface PixabayImage {
 const PIXABAY_CATEGORIES = ['travel', 'places', 'buildings', 'nature']
 
 export async function searchPixabayImage(query: string): Promise<PixabayImage | null> {
+  // If no API key, skip Pixabay
+  if (!PIXABAY_API_KEY) {
+    console.warn('No Pixabay API key provided, skipping Pixabay search')
+    return null
+  }
+
   const searchQueries = [
     `${query} landmark`,
     `${query} destination`,
@@ -25,7 +30,7 @@ export async function searchPixabayImage(query: string): Promise<PixabayImage | 
     for (const category of PIXABAY_CATEGORIES) {
       try {
         const response = await fetch(
-          `https://pixabay.com/api/?key=${process.env.NEXT_PUBLIC_PIXABAY_API_KEY}&q=${encodeURIComponent(searchQuery)}&image_type=photo&orientation=horizontal&per_page=20&safesearch=true&category=${category}&min_width=1200&min_height=800&editors_choice=true`,
+          `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(searchQuery)}&image_type=photo&orientation=horizontal&per_page=20&safesearch=true&category=${category}&min_width=1200&min_height=800&editors_choice=true`,
           {
             headers: {
               'Accept': 'application/json'

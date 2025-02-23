@@ -1,8 +1,7 @@
 import { searchPixabayImage, type PixabayImage } from './pixabay'
 
-if (!process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_UNSPLASH_ACCESS_KEY environment variable')
-}
+// Make API key check non-blocking
+const UNSPLASH_API_KEY = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY
 
 export interface UnsplashImage {
   id: string
@@ -62,6 +61,12 @@ const UNSPLASH_HOURLY_LIMIT = 50
 const resetTime = new Date()
 
 async function searchUnsplashImage(query: string): Promise<ImageResult | null> {
+  // If no API key, skip Unsplash
+  if (!UNSPLASH_API_KEY) {
+    console.warn('No Unsplash API key provided, skipping Unsplash search')
+    return null
+  }
+
   // Check if we should reset the counter (every hour)
   const now = new Date()
   if (now.getTime() - resetTime.getTime() >= 3600000) {
@@ -89,7 +94,7 @@ async function searchUnsplashImage(query: string): Promise<ImageResult | null> {
         `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=20&orientation=landscape&content_filter=high`,
         {
           headers: {
-            'Authorization': `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`,
+            'Authorization': `Client-ID ${UNSPLASH_API_KEY}`,
             'Accept-Version': 'v1'
           }
         }
